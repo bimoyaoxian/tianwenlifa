@@ -72,26 +72,6 @@ python prompt.py --year 1990 --month 6 --day 15 --gender 女
 
 ---
 
-## 🌐 在线部署（免费）
-
-本项目可一键部署到 **Render.com**（免费计划，无需信用卡）。
-
-```
-render.yaml  →  Render 自动识别，点一下 Deploy 即可
-```
-
-**部署步骤**：
-
-1. 将项目推送到 GitHub 仓库
-2. 登录 [render.com](https://render.com) → **New** → **Web Service**
-3. 连接你的 GitHub 仓库
-4. Render 自动读取 `render.yaml`，点击 **Deploy**
-5. 等待 2-3 分钟，访问 `https://你的应用名.onrender.com`
-
-> ⚠️ 免费版 15 分钟无访问会休眠，下次访问需等约 30 秒唤醒。
-
----
-
 ## 🧩 输出模式
 
 `prompt.py` 支持 6 种输出模式：
@@ -152,6 +132,7 @@ tianwenlifa/
 ## 📜 免责声明
 
 本项目仅用于**学习和研究目的**。算法实现参考了公开的天文学和传统命理学知识。不构成任何形式的命理咨询或决策建议。
+核心来源于（周鹏说历法）：https://www.sitianxueyuan.com/
 
 ---
 
