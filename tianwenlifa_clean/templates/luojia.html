@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>落甲日历</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Times New Roman","宋体",serif;background:#e8e0d0;color:#000;font-size:16px}
+a{color:#000;text-decoration:underline}
+#top_box{padding:12px 20px;max-width:1100px;margin:0 auto}
+.otherLinks{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px}
+.otherLinks .homePage a{font-size:24px;font-weight:bold;color:#000;text-decoration:none;letter-spacing:6px}
+.otherLinks>div a{font-size:15px;color:#000;text-decoration:none}
+.otherLinks>div a:hover{text-decoration:underline;color:#400}
+.otherLinks .nav-active a{font-weight:bold;color:#600!important}
+.container{max-width:1100px;margin:10px auto;padding:0 20px}
+.selection{border:1px solid #999;padding:12px;margin-bottom:10px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.selection label{font-size:14px;display:flex;align-items:center;gap:6px}
+.selection input,.selection select{border:1px solid #888;padding:3px 6px;background:#f8f0e4;font-size:14px}
+.selection button{border:1px solid #888;background:#f0e8d8;padding:3px 14px;cursor:pointer}
+.selection button:hover{background:#e0d8c8}
+.legend{font-size:12px;margin-bottom:8px;display:flex;gap:14px;padding:6px 0}
+.legend span{display:flex;align-items:center;gap:3px}
+.dot{display:inline-block;width:14px;height:14px;border:1px solid #888}
+.dot.blue{background:#6688cc}
+.dot.green{background:#66aa66}
+.dot.white{background:#f8f0e4}
+.cal-section{border:1px solid #999;padding:12px;margin-bottom:10px}
+.month-title{font-size:16px;font-weight:bold;margin:10px 0 4px;padding-bottom:2px;border-bottom:1px solid #ccc}
+.week-row{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:12px;margin-bottom:2px}
+.week-row div{padding:3px}
+.week-row div:first-child{color:#c00}
+.week-row div:last-child{color:#060}
+.day-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
+.day-cell{padding:6px 3px;text-align:center;cursor:pointer;font-size:13px;min-height:32px;position:relative}
+.day-cell:hover{opacity:0.8}
+.day-cell .term{font-size:8px;position:absolute;top:0;right:1px;color:#800;font-weight:bold}
+.day-cell.fb{background:#d0d8f0;color:#224}
+.day-cell.mg{background:#d0f0d0;color:#242}
+.day-cell.wh{background:#f8f4ec;color:#000;font-weight:bold}
+.loading{padding:30px;color:#666;text-align:center}
+.year-pillar{font-size:18px;font-weight:bold;color:#800;letter-spacing:4px}
+</style>
+</head>
+<body>
+<div id="top_box">
+<div class="otherLinks">
+<div class="homePage"><a href="/">天文历算</a></div>
+<div><a href="/">天文历算</a></div>
+<div class="nav-active"><a href="/luojia">落甲日历</a></div>
+<div><a href="/bazi">八字排盘</a></div>
+<div><a href="/tools">观天察时</a></div>
+</div>
+</div>
+<div class="container">
+<div class="selection">
+<label>年份：<input type="number" id="luoYear" value="2026" style="width:70px"></label>
+<label>制式：<select id="scheme">
+<option value="1">五元六纪</option>
+<option value="2">古制二至</option>
+<option value="3">古制年尾</option>
+</select></label>
+<button onclick="loadLuojia()">确定</button>
+<span style="display:flex;gap:2px">
+<button onclick="changeLuoYear(-1)">年←</button>
+<button onclick="changeLuoYear(1)">年→</button>
+</span>
+<div style="margin-left:auto"><span class="year-pillar" id="yearPillar"></span></div>
+</div>
+<div class="legend">
+<span><span class="dot blue"></span> 阴年(水运)</span>
+<span><span class="dot green"></span> 阳年(木运)</span>
+<span><span class="dot white"></span> 特殊日</span>
+</div>
+<div id="calContainer"></div>
+</div>
+<script>
+async function loadLuojia(){
+const y=parseInt(document.getElementById('luoYear').value)||2026;
+const s=parseInt(document.getElementById('scheme').value)||1;
+const ct=document.getElementById('calContainer');
+ct.innerHTML='<div class="loading">加载中...</div>';
+try{
+const r=await fetch('/api/luojia_calendar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,scheme:s})});
+if(!r.ok)throw new Error('HTTP '+r.status);
+const d=await r.json();
+if(!d||!d.months)throw new Error('返回数据异常');
+document.getElementById('yearPillar').textContent=(d.year_pillar||'')+'年';
+renderCal(d.months,y);
+}catch(e){ct.innerHTML='<div style="color:#c00;padding:20px">加载失败: '+e.message+'</div>'}
+}
+function renderCal(months,year){
+const ct=document.getElementById('calContainer');ct.innerHTML='';
+if(!months||!months.length){ct.innerHTML='<div style="color:#c00;padding:20px">暂无数据</div>';return}
+for(const md of months){
+const days=md.days||[];
+if(!days.length)continue;
+const mt=document.createElement('div');mt.className='month-title';mt.textContent=year+'年'+md.month+'月';ct.appendChild(mt);
+const wr=document.createElement('div');wr.className='week-row';
+['日','一','二','三','四','五','六'].forEach((d,i)=>{const e=document.createElement('div');e.textContent=d;wr.appendChild(e)});
+ct.appendChild(wr);
+const g=document.createElement('div');g.className='day-grid';
+const fw=days[0].dayOfWeek||0;
+for(let i=0;i<fw;i++){const e=document.createElement('div');e.style.padding='6px';g.appendChild(e)}
+for(const d of days){
+const e=document.createElement('div');e.className='day-cell';
+if(d.color==='femaleBlue')e.classList.add('fb');
+else if(d.color==='maleGreen')e.classList.add('mg');
+else if(d.color==='white')e.classList.add('wh');
+e.textContent=d.day;
+if(d.solar_term){const tl=document.createElement('div');tl.className='term';tl.textContent=d.solar_term;e.appendChild(tl)}
+e.title=(d.ganzhi||'')+' | '+(d.solar_term||'')+' | JD:'+(d.jd||'');
+g.appendChild(e);
+}
+ct.appendChild(g);
+}
+}
+function changeLuoYear(delta){
+  const y=document.getElementById('luoYear');
+  y.value=parseInt(y.value)+delta;loadLuojia();
+}
+document.addEventListener('DOMContentLoaded',loadLuojia);
+</script>
+</body>
+</html>

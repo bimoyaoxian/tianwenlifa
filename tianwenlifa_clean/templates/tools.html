@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>观天察时 - 司天学苑本地版</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:"Microsoft YaHei","SimSun",serif;background:#0a0e1a;color:#d4c9a8}
+a{color:#c4a040;text-decoration:none}
+#top_box{background:linear-gradient(135deg,#1a1f33,#0f1528);border-bottom:2px solid #3a2f1a;padding:12px 20px}
+.otherLinks{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;max-width:1200px;margin:0 auto}
+.otherLinks .homePage a{color:#f0d68a;font-size:20px;letter-spacing:4px}
+.otherLinks div a{font-size:14px;padding:4px 8px;border-radius:4px;transition:all 0.3s}
+.otherLinks div a:hover{background:rgba(196,160,64,0.15);color:#f0d68a}
+.otherLinks .nav-active a{color:#f0d68a!important;background:rgba(196,160,64,0.2);border-radius:4px}
+.container{max-width:960px;margin:20px auto;padding:0 16px}
+.card{background:#141a2e;border:1px solid #2a2f4a;border-radius:10px;padding:20px;margin-bottom:16px}
+.card h2{color:#f0d68a;font-size:18px;margin-bottom:12px;letter-spacing:4px}
+.form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.form-group{flex:1;min-width:100px}
+.form-group label{display:block;color:#6a5d3a;font-size:12px;margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px 10px;background:#0a0e1a;border:1px solid #2a2f4a;border-radius:5px;color:#d4c9a8;font-size:13px}
+.form-group input:focus{outline:none;border-color:#c4a040}
+.btn{background:linear-gradient(135deg,#c4a040,#a08020);color:#1a0e00;border:none;border-radius:5px;padding:10px 24px;cursor:pointer;font-weight:bold;font-size:14px;letter-spacing:4px}
+.btn:hover{background:linear-gradient(135deg,#e0b850,#c4a040)}
+.result-box{padding:12px;background:#0a0e1a;border-radius:6px;margin-top:12px;font-size:13px;line-height:1.8}
+.result-box .label{color:#6a5d3a}
+.result-box .value{color:#d4c9a8}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:12px}
+th,td{padding:6px 8px;text-align:center;border-bottom:1px solid #1a1f33}
+th{color:#6a5d3a;font-weight:normal}
+td{color:#d4c9a8}
+.highlight{color:#f0d68a}
+</style>
+</head>
+<body>
+<div id="top_box">
+<div class="otherLinks">
+<div class="homePage"><a href="/">天文历算</a></div>
+<div><a href="/">天文历算</a></div>
+<div><a href="/luojia">落甲日历</a></div>
+<div><a href="/bazi">八字排盘</a></div>
+<div class="nav-active"><a href="/tools">观天察时</a></div>
+</div>
+</div>
+
+<div class="container">
+<div class="card">
+<h2>真太阳时计算</h2>
+<div class="form-row">
+<div class="form-group"><label>年</label><input type="number" id="tsYear" value="2026"></div>
+<div class="form-group"><label>月</label><input type="number" id="tsMonth" value="5"></div>
+<div class="form-group"><label>日</label><input type="number" id="tsDay" value="27"></div>
+<div class="form-group"><label>时</label><input type="number" id="tsHour" value="16"></div>
+<div class="form-group"><label>分</label><input type="number" id="tsMin" value="0"></div>
+<div class="form-group"><label>东经</label><input type="number" id="tsLon" value="116.4" step="0.1"></div>
+</div>
+<button class="btn" onclick="calcTrueSun()">计算</button>
+<div id="tsResult" class="result-box" style="display:none"></div>
+</div>
+
+<div class="card">
+<h2>二十四节气</h2>
+<div class="form-row">
+<div class="form-group" style="max-width:120px"><label>年份</label><input type="number" id="stYear" value="2026"></div>
+<button class="btn" onclick="loadTerms()" style="align-self:end">查询</button>
+</div>
+<div id="termsResult"></div>
+</div>
+
+<div class="card">
+<h2>儒略日换算</h2>
+<div class="form-row">
+<div class="form-group"><label>年</label><input type="number" id="jdYear" value="2026"></div>
+<div class="form-group"><label>月</label><input type="number" id="jdMonth" value="5"></div>
+<div class="form-group"><label>日</label><input type="number" id="jdDay" value="27"></div>
+<button class="btn" onclick="calcJD()" style="align-self:end">换算</button>
+</div>
+<div id="jdResult" class="result-box" style="display:none"></div>
+</div>
+</div>
+
+<script>
+function showErr(id, msg){const d=document.getElementById(id);d.style.display='block';d.innerHTML='<div style="color:#c44">错误: '+msg+'</div>';}
+
+async function calcTrueSun() {
+const div=document.getElementById('tsResult');div.style.display='block';div.innerHTML='<div>计算中...</div>';
+try{
+const y=parseInt(document.getElementById('tsYear').value);
+const m=parseInt(document.getElementById('tsMonth').value);
+const d=parseInt(document.getElementById('tsDay').value);
+const h=parseInt(document.getElementById('tsHour').value);
+const min=parseInt(document.getElementById('tsMin').value);
+const lon=parseFloat(document.getElementById('tsLon').value);
+const r=await fetch('/api/bazi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+year:y,month:m,day:d,hour:h,minute:min,gender:'男',system:'standard',longitude:lon})});
+if(!r.ok)throw new Error('HTTP '+r.status);
+const data=await r.json();const ts=data.true_solar;
+if(ts)div.innerHTML='<div><span class="label">标准时间：</span><span class="value">'+y+'年'+m+'月'+d+'日 '+String(h).padStart(2,'0')+':'+String(min).padStart(2,'0')+'</span></div><div><span class="label">真太阳时：</span><span class="value highlight">'+(ts.true_solar_time||'')+'</span></div><div><span class="label">时差方程：</span><span class="value">'+(ts.equation_of_time||0)+' 分钟</span></div><div><span class="label">经度修正：</span><span class="value">'+(ts.longitude_correction||0)+' 分钟 ('+lon+'°E)</span></div><div><span class="label">儒略日：</span><span class="value">'+(ts.true_jd||'')+'</span></div>';
+else div.innerHTML='<div class="value">未提供经度，未计算真太阳时</div>';
+}catch(e){showErr('tsResult',e.message)}
+}
+
+async function loadTerms() {
+const div=document.getElementById('termsResult');div.innerHTML='<div>加载中...</div>';
+try{
+const y=parseInt(document.getElementById('stYear').value);
+const r=await fetch('/api/solar_terms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y})});
+if(!r.ok)throw new Error('HTTP '+r.status);
+const data=await r.json();
+if(!data||!data.length){div.innerHTML='<div style="color:#c44">暂无节气数据</div>';return;}
+let html='<table><thead><tr><th>节气</th><th>日期</th><th>时间</th><th>儒略日</th></tr></thead><tbody>';
+const majors=['小寒','立春','惊蛰','清明','立夏','芒种','小暑','立秋','白露','寒露','立冬','大雪'];
+for(const t of data){
+const im=majors.includes(t.name);
+html+='<tr'+(im?' style="color:#f0d68a"':'')+'><td'+(im?' style="font-weight:bold"':'')+'>'+t.name+'</td><td>'+t.month+'月'+t.day+'日</td><td>'+String(t.hour).padStart(2,'0')+':'+String(t.minute).padStart(2,'0')+'</td><td>'+t.jd+'</td></tr>';
+}
+div.innerHTML=html+'</tbody></table>';
+}catch(e){div.innerHTML='<div style="color:#c44">获取失败: '+e.message+'</div>'}
+}
+
+async function calcJD() {
+const div=document.getElementById('jdResult');div.style.display='block';div.innerHTML='<div>计算中...</div>';
+try{
+const y=parseInt(document.getElementById('jdYear').value);
+const m=parseInt(document.getElementById('jdMonth').value);
+const d=parseInt(document.getElementById('jdDay').value);
+const r=await fetch('/api/bazi',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m,day:d,hour:12,minute:0,gender:'男',system:'standard',longitude:120})});
+if(!r.ok)throw new Error('HTTP '+r.status);
+const data=await r.json();
+const jd=data.true_solar?.true_jd||'';
+div.innerHTML='<div><span class="label">公历：</span><span class="value">'+y+'年'+m+'月'+d+'日</span></div><div><span class="label">儒略日：</span><span class="value highlight">'+jd+'</span></div><div><span class="label">日干支：</span><span class="value">'+(data.day_pillar||'')+'</span></div><div><span class="label">年干支：</span><span class="value">'+(data.year_pillar||'')+'</span></div>';
+}catch(e){showErr('jdResult',e.message)}
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{loadTerms();calcTrueSun();});
+</script>
+</body>
+</html>

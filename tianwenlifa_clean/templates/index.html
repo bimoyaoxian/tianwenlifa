@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>天文历算</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:"Times New Roman","宋体",serif;
+  background:#e8e0d0;
+  color:#000;
+  font-size:16px;
+}
+a{color:#000;text-decoration:underline}
+a:hover{color:#600}
+.bigBox{max-width:1100px;margin:0 auto;padding:10px 20px}
+
+/* 顶部 */
+#top_box{padding:10px 0}
+.otherLinks{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px 20px}
+.otherLinks .homePage a{font-size:24px;font-weight:bold;color:#000;text-decoration:none;letter-spacing:6px}
+.otherLinks>div a{font-size:15px;color:#000;text-decoration:none}
+.otherLinks>div a:hover{text-decoration:underline;color:#400}
+.otherLinks .nav-active a{font-weight:bold;color:#600!important}
+
+/* 时间选择 */
+#bottom_box{margin-top:6px}
+.timeCorrelation{margin-bottom:10px;padding:6px 0}
+.timeCorrelation_box{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.timeSelection{display:flex;align-items:center;gap:4px;font-size:15px}
+.timeSelection input[type=text]{border:1px solid #888;padding:2px 4px;font-size:14px;text-align:center;width:50px}
+.timeSelection input[type=button]{border:1px solid #888;background:#f0e8d8;padding:2px 10px;cursor:pointer;font-size:13px}
+.timeSelection input[type=button]:hover{background:#e0d8c8}
+.timeButton{display:flex;gap:2px}
+.timeButton input[type=button]{border:1px solid #aaa;background:transparent;padding:1px 8px;cursor:pointer;font-size:12px}
+.timeButton input[type=button]:hover{background:#ddd}
+
+/* 主布局 */
+.largeContainer{display:flex;gap:20px;margin-top:4px}
+
+/* 日历 */
+.Cal2{flex:1;min-width:0}
+.Cal2_container{padding:4px}
+.dayOfTheWeek{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;border-bottom:1px solid #999;padding:4px 0;margin-bottom:2px}
+.dayOfTheWeek div{font-size:13px}
+.dayOfTheWeek div:first-child{color:#c00}
+.dayOfTheWeek div:last-child{color:#060}
+.days{display:grid;grid-template-columns:repeat(7,1fr)}
+.days>div{padding:5px 4px;text-align:center;cursor:pointer;min-height:48px;border-bottom:1px solid #ddd;position:relative;font-size:14px}
+.days>div:hover{background:#d8d0c0}
+.days>div .lunar-text{font-size:10px;color:#666;margin-top:1px}
+.days>div .term-text{font-size:9px;color:#600;position:absolute;top:1px;right:2px;font-weight:bold}
+.days>div.today{background:#f0e8c0}
+.days>div.other-month{color:#bbb}
+.days>div.other-month .lunar-text{color:#ccc}
+.days>div.selected{background:#d0c8b8;font-weight:bold}
+.days>div.sunday{color:#c00}
+.days>div.saturday{color:#060}
+
+/* 右侧信息面板 */
+.Cal3{width:360px;flex-shrink:0}
+.lunarSolarTermsInfo{border:1px solid #999;padding:10px 12px;margin-bottom:8px;min-height:80px}
+.lunarSolarTermsInfo .date-title{font-size:18px;font-weight:bold;margin-bottom:4px}
+.lunarSolarTermsInfo .info-line{font-size:13px;line-height:1.8;color:#333}
+.lunarSolarTermsInfo .info-line .hl{color:#800;font-weight:bold}
+.tianYuanLi{display:flex;flex-direction:column;gap:4px}
+.mrb{border:1px solid #999;padding:8px 12px;font-size:13px;line-height:1.6}
+.mrb .label{color:#666;font-size:11px;letter-spacing:2px}
+.mrb .value{color:#000;margin-top:1px}
+.mrb .highlight{color:#800;font-size:15px;letter-spacing:4px}
+
+/* 底部 */
+.siXiang{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;padding:10px 0;justify-content:center;border-top:1px solid #ccc}
+.siXiang>div{font-size:12px;text-align:center;color:#666;letter-spacing:2px;line-height:1.8}
+.siXiang .fourLeft,.siXiang .fourRight{text-align:left}
+
+.solar-system-box{border:1px solid rgba(180,160,120,0.25);padding:0;margin-top:10px;background:#0c0e1a;border-radius:0;position:relative}
+
+.solar-system-box::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(180deg,transparent,rgba(12,14,26,0.8))}
+
+.ss-header{display:flex;align-items:center;justify-content:space-between;padding:8px 14px 4px 14px;border-bottom:1px solid rgba(180,160,120,0.12)}
+.ss-header .ss-title{font-size:11px;color:rgba(180,160,120,0.5);letter-spacing:6px}
+.ss-header .ss-date{font-size:11px;color:rgba(180,160,120,0.35);letter-spacing:2px}
+.solar-system-box canvas{display:block;margin:0 auto;max-width:100%;width:auto}
+@media(max-width:860px){.largeContainer{flex-direction:column}.Cal3{width:100%}}
+</style>
+</head>
+<body>
+<div class="bigBox">
+<div id="top_box">
+<div class="otherLinks">
+<div class="homePage"><a href="/">天文历算</a></div>
+<div class="nav-active"><a href="/">天文历算</a></div>
+<div><a href="/luojia">落甲日历</a></div>
+<div><a href="/bazi">八字排盘</a></div>
+<div><a href="/tools">观天察时</a></div>
+</div>
+</div>
+
+<div id="bottom_box">
+<div class="timeCorrelation">
+<div class="timeCorrelation_box">
+<div class="timeSelection">
+<span>公元</span>
+<input id="Cal_y" size="4" type="text" value="2026">
+<span>年</span>
+<input id="Cal_m" maxlength="2" size="2" type="text" value="5">
+<span>月</span>
+<input onclick="loadCalendar()" type="button" value="确定">
+</div>
+<div class="timeButton">
+<input onclick="changeYear(0)" type="button" value="年↑">
+<input onclick="changeYear(1)" type="button" value="年↓">
+<input onclick="changeMonth(0)" type="button" value="月↑">
+<input onclick="changeMonth(1)" type="button" value="月↓">
+<input onclick="changeMonth(2)" type="button" value="今">
+</div>
+</div>
+</div>
+
+<div class="largeContainer">
+<div class="Cal2">
+<div class="Cal2_container">
+<div class="dayOfTheWeek">
+<div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+</div>
+<div class="days" id="calendarGrid"></div>
+</div>
+</div>
+
+<div class="Cal3">
+<div class="lunarSolarTermsInfo" id="datePanel">
+<div class="date-title" id="detailTitle">天文历算</div>
+<div class="info-line" id="detailLine1">点击日历日期查看详情</div>
+<div class="info-line" id="detailLine2"></div>
+</div>
+<div class="tianYuanLi" id="infoPanel"></div>
+</div>
+</div>
+</div>
+
+<div class="solar-system-box">
+  <div class="ss-header">
+    <div class="ss-title">✦ 实 时 天 象</div>
+    <div class="ss-date" id="ssDateLabel"></div>
+  </div>
+  <canvas id="solarCanvas" width="560" height="560"></canvas>
+</div>
+
+<div class="siXiang">
+<div class="fourLeft">
+<div>七星连珠 位于虚宿</div>
+<div>立春次日 朔旦甲戌</div>
+<div>岁差两宫 年建甲寅</div>
+</div>
+<div>
+<div>积年起月 积月起日</div>
+<div>不依五虎 自然遁月</div>
+<div>三百六十 天道重现</div>
+</div>
+</div>
+</div>
+
+<script>
+let currentYear,currentMonth,calendarData={};
+
+function init(){
+  const n=new Date();
+  document.getElementById('Cal_y').value=n.getFullYear();
+  document.getElementById('Cal_m').value=n.getMonth()+1;
+  loadCalendar();
+}
+document.addEventListener('DOMContentLoaded',init);
+
+function changeYear(dir){
+  const y=document.getElementById('Cal_y');
+  y.value=parseInt(y.value)+(dir===0?-1:1);loadCalendar();
+}
+function changeMonth(dir){
+  const m=document.getElementById('Cal_m'),y=document.getElementById('Cal_y');
+  if(dir===2){const n=new Date();y.value=n.getFullYear();m.value=n.getMonth()+1;loadCalendar();return}
+  let v=parseInt(m.value),yv=parseInt(y.value);
+  if(dir===0){v--;if(v<1){v=12;yv--}}
+  else{v++;if(v>12){v=1;yv++}}
+  m.value=v;y.value=yv;loadCalendar();
+}
+
+async function loadCalendar(){
+  const y=parseInt(document.getElementById('Cal_y').value);
+  const m=parseInt(document.getElementById('Cal_m').value);
+  currentYear=y;currentMonth=m;
+  document.getElementById('calendarGrid').innerHTML='<div style="padding:20px;color:#666">加载中...</div>';
+  try{
+    const r=await fetch('/api/calendar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({year:y,month:m})});
+    const d=await r.json();calendarData=d;
+    renderCalendar(d,y,m);renderInfo(d.info);
+    // 默认选中当天
+    const today=new Date();
+    if(today.getFullYear()===y&&today.getMonth()+1===m) selectDate(today.getDate());
+    else selectDate(1);
+  }catch(e){document.getElementById('calendarGrid').innerHTML='<div style="color:#c00;padding:20px">加载失败</div>'}
+}
+
+let selectedDay=null;
+function renderCalendar(data,year,month){
+  const grid=document.getElementById('calendarGrid');grid.innerHTML='';
+  const days=data.days||[];
+  const firstDay=days.length>0?days[0].weekday:0;
+  const pMonth=month===1?12:month-1;
+  const pYear=month===1?year-1:year;
+  const pMonthDays=new Date(pYear,pMonth,0).getDate();
+  for(let i=0;i<firstDay;i++){
+    const c=document.createElement('div');c.className='day-cell other-month';
+    c.textContent=pMonthDays-firstDay+1+i;grid.appendChild(c);
+  }
+  const now=new Date();
+  for(const day of days){
+    const c=document.createElement('div');c.className='day-cell';
+    if(now.getFullYear()===year&&now.getMonth()+1===month&&now.getDate()===day.day)c.classList.add('today');
+    if(day.weekday===0)c.classList.add('sunday');
+    if(day.weekday===6)c.classList.add('saturday');
+    let h='<div>'+day.day+'</div>';
+    if(day.term)h+='<div class="term-text">'+day.term+'</div>';
+    h+='<div class="lunar-text">'+(day.lunar_day||'')+'</div>';
+    c.innerHTML=h;
+    c.onclick=function(){selectDate(day.day)};
+    c.id='cell-'+day.day;
+    grid.appendChild(c);
+  }
+  const total=firstDay+days.length;
+  const rem=(7-(total%7))%7;
+  for(let i=1;i<=rem;i++){const c=document.createElement('div');c.className='day-cell other-month';c.textContent=i;grid.appendChild(c)}
+}
+
+function selectDate(day){
+  if(selectedDay){const old=document.getElementById('cell-'+selectedDay);if(old)old.classList.remove('selected')}
+  const cell=document.getElementById('cell-'+day);
+  if(cell){cell.classList.add('selected');selectedDay=day}
+  updateDatePanel(currentYear,currentMonth,day);
+}
+
+function updateDatePanel(year,month,day){
+  const days=calendarData.days||[];
+  const d=days.find(x=>x.day===day);
+  const title=document.getElementById('detailTitle');
+  const line1=document.getElementById('detailLine1');
+  const line2=document.getElementById('detailLine2');
+  if(d){
+    title.textContent=year+'年'+month+'月'+day+'日';
+    const lunarStr=(d.lunar_month||'')+'月'+(d.lunar_day||'');
+    let info='';
+    info+='<div>农历: <span class="hl">'+lunarStr+'</span></div>';
+    info+='<div>天文(落甲): <span class="hl">'+(d.luo_year||'')+'年 '+(d.luo_month||'')+'月</span></div>';
+    info+='<div>标准(节气): <span class="hl">'+(d.std_year||'')+'年 '+(d.std_month||'')+'月</span></div>';
+    info+='<div>日干支: <span class="hl">'+(d.ganzhi||'')+'</span>';
+    if(d.term)info+=' | 节气: <span class="hl">'+d.term+'</span>';
+    info+='</div>';
+    // 五运六气 + 天文星象
+    if(d.wuyun){
+      const w=d.wuyun;
+      info+='<div style="margin-top:6px;font-size:12px;line-height:1.7;border-top:1px solid #ddd;padding-top:4px">';
+      info+='<div>客运：<span class="hl">'+w.sui_yun+'</span></div>';
+      info+='<div>客气：<span class="hl">'+w.si_tian+'</span>司天　<span class="hl">'+w.zai_quan+'</span>在泉</div>';
+      info+='<div>年支：<span class="hl">'+w.foot_jingluo+'</span></div>';
+      info+='<div>主运：<span class="hl">'+w.zhu_yun+'</span></div>';
+      info+='<div>主气：<span class="hl">'+w.zhu_qi_period+' '+w.zhu_qi+'</span></div>';
+      info+='<div>月支：<span class="hl">'+w.hand_jingluo+'</span></div>';
+      info+='<div>实际天象：<span class="hl">'+w.tianxiang+'</span></div>';
+      info+='<div>斗建：<span class="hl">'+w.dou_jian_text+'</span></div>';
+      info+='<div>星次：<span class="hl">'+w.xingci_text+'</span></div>';
+      info+='<div>岁差偏移：<span class="hl">'+w.precession_offset+'</span></div>';
+      info+='</div>';
+    }
+    line1.innerHTML=info;
+    line2.textContent='儒略日: '+(d.jd||'');
+  }else{
+    title.textContent=year+'年'+month+'月'+day+'日';
+    line1.innerHTML='暂无数据';
+    line2.textContent='';
+  }
+}
+
+function renderInfo(info){
+  const panel=document.getElementById('infoPanel');
+  if(!info){panel.innerHTML='<div class="mrb"><div class="label">暂无数据</div></div>';return}
+  panel.innerHTML=`
+<div class="mrb"><div class="label">当前节气</div><div class="value">${(info&&Array.isArray(info.terms)&&info.terms.length)?info.terms.join('<br>'):'无'}</div></div>
+<div class="mrb"><div class="label">历法要诀</div><div class="value" style="font-size:11px;line-height:1.8;color:#666">
+积年起月 积月起日　　不依五虎 自然遁月<br>
+岁差两宫 年建甲寅　　三百六十 天道重现</div></div>`;
+}
+
+// ===== 太阳系俯视图动画 =====
+// 数据流向: 点击日期 → API返回行星日心黄经 → easeOut缓动动画 → Canvas绘制
+// 动画策略: 3秒easeOutExpo, 距离>90°才转1整圈(保证落位精确), 月球独立快速绕地
+const SS = {
+  canvas: null, ctx: null,
+  planets: {},     // 从API获取的行星数据 {name: {helio_lon, distance, name_cn, color, displayLon}}
+  size: 0, cx: 0, cy: 0,
+  stars: [],
+  // 轨道半径(px) 对应560x560画布
+  orbitR: {mercury:35,venus:52,earth:68,mars:84,jupiter:130,saturn:160,uranus:195,neptune:225,pluto:245},
+  planetSize: {sun:15,mercury:3,venus:5,earth:5,mars:3.5,jupiter:9,saturn:8,uranus:6,neptune:5.5,pluto:2.5},
+  // 月球独立绕地动画角度(与API月相无关,纯视觉效果)
+  moonAngle: 0,
+
+  init() {
+    this.canvas = document.getElementById('solarCanvas');
+    this.ctx = this.canvas.getContext('2d');
+    this.size = this.canvas.width;
+    this.cx = this.cy = this.size / 2;
+    for (let i=0; i<120; i++) {
+      this.stars.push({
+        x: Math.random()*this.size, y: Math.random()*this.size,
+        r: Math.random()*1.5+0.3, a: 0.15+Math.random()*0.6
+      });
+    }
+    this.startLoop();
+  },
+
+  // 请求API并初始化缓动动画
+  // 每次切换日期都会触发,保留当前displayLon确保动画连续
+  async fetchAndDraw() {
+    const y = parseInt(document.getElementById('Cal_y').value);
+    const m = parseInt(document.getElementById('Cal_m').value);
+    const d = selectedDay || 1;
+    document.getElementById('ssDateLabel').textContent = y+'年'+m+'月'+d+'日';
+    try {
+      const r = await fetch('/api/solar_system', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({year:y,month:m,day:d})
+      });
+      const np = await r.json();
+      for (const name in np) {
+        const old = this.planets && this.planets[name];
+        np[name].displayLon = old ? (old.displayLon || 0) : 0;
+      }
+      this.planets = np;
+      // 用 easeOutExpo 3秒冲到位
+      for (const name in this.planets) {
+        const p = this.planets[name];
+        if (!p || name === 'sun' || name === 'moon') continue;
+        const s = p.displayLon || 0, t = p.helio_lon;
+        const delta = ((t - s + 540) % 360) - 180;
+        const spins = Math.abs(delta) > 90 ? 1 : 0;
+        const dir = Math.sign(delta) || 1;
+        p._from = s; p._total = delta + dir * spins * 360;
+        p._t0 = performance.now();
+      }
+    } catch(e) { console.log('太阳系加载失败', e); }
+  },
+
+  startLoop() {
+    const norm = (a) => ((a % 360) + 360) % 360;
+    const expo = (t) => t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const tick = () => {
+      const now = performance.now();
+      for (const name in this.planets) {
+        const p = this.planets[name];
+        if (!p || name === 'sun') continue;
+        if (name === 'moon') {
+          this.moonAngle = (this.moonAngle + 0.6) % 360;
+          continue;
+        }
+        if (p._from !== undefined && p._t0 !== undefined) {
+          const t = Math.min((now - p._t0) / 3000, 1);
+          p.displayLon = norm(p._from + p._total * expo(t));
+          if (t >= 1) { delete p._from; delete p._total; delete p._t0; }
+        }
+      }
+      this.draw();
+      this.animId = requestAnimationFrame(tick);
+    };
+    this.animId = requestAnimationFrame(tick);
+  },
+
+  draw() {
+    const ctx = this.ctx, S = this.size, CX = this.cx, CY = this.cy;
+    ctx.clearRect(0, 0, S, S);
+
+    // 深邃星空背景
+    const bg = ctx.createRadialGradient(CX*0.6, CY*0.5, 0, CX, CY, S*0.8);
+    bg.addColorStop(0, '#1a1e3a');
+    bg.addColorStop(0.3, '#11142a');
+    bg.addColorStop(0.7, '#0a0c18');
+    bg.addColorStop(1, '#04050a');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, S, S);
+
+    // 繁星（大小亮度各异）
+    for (const s of this.stars) {
+      ctx.fillStyle = `rgba(255,255,255,${s.a})`;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    // 轨道（极淡银线）
+    const order = ['mercury','venus','earth','mars','jupiter','saturn','uranus','neptune','pluto'];
+    for (const name of order) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.lineWidth = 0.4;
+      ctx.beginPath();
+      ctx.arc(CX, CY, this.orbitR[name], 0, Math.PI*2);
+      ctx.stroke();
+    }
+
+    // 小行星带
+    ctx.setLineDash([2,6]);
+    ctx.strokeStyle = 'rgba(200,170,120,0.08)';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.arc(CX, CY, 105, 0, Math.PI*2); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // 太阳（金光辉映）
+    for (let g=40; g>8; g-=6) {
+      ctx.fillStyle = `rgba(255,200,50,${0.02})`;
+      ctx.beginPath(); ctx.arc(CX, CY, g, 0, Math.PI*2); ctx.fill();
+    }
+    const sunGrad = ctx.createRadialGradient(CX-3, CY-3, 0, CX, CY, 28);
+    sunGrad.addColorStop(0, '#fff8e0');
+    sunGrad.addColorStop(0.15, '#ffdd44');
+    sunGrad.addColorStop(0.4, '#f5a030');
+    sunGrad.addColorStop(0.7, 'rgba(200,100,20,0.3)');
+    sunGrad.addColorStop(1, 'rgba(180,80,10,0)');
+    ctx.fillStyle = sunGrad;
+    ctx.beginPath(); ctx.arc(CX, CY, 28, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff8e0';
+    ctx.beginPath(); ctx.arc(CX, CY, 5, 0, Math.PI*2); ctx.fill();
+
+    // 行星 + 月球
+    for (const name of order) {
+      const p = this.planets[name];
+      if (!p) continue;
+      const angle = (p.displayLon || 0) * Math.PI / 180;
+      const x = CX + this.orbitR[name] * Math.cos(angle);
+      const y = CY - this.orbitR[name] * Math.sin(angle);
+      const sz = this.planetSize[name] || 4;
+
+      // 光晕
+      ctx.fillStyle = `rgba(255,255,255,0.03)`;
+      ctx.beginPath(); ctx.arc(x, y, sz*3, 0, Math.PI*2); ctx.fill();
+
+      // 行星本体
+      ctx.fillStyle = p.color || '#ccc';
+      ctx.shadowColor = p.color || '#ccc';
+      ctx.shadowBlur = sz * 2;
+      ctx.beginPath(); ctx.arc(x, y, sz, 0, Math.PI*2); ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // 土星环
+      if (name === 'saturn') {
+        ctx.strokeStyle = 'rgba(200,180,150,0.25)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.ellipse(x, y, sz*2.8, sz*0.6, 0.3, 0, Math.PI*2);
+        ctx.stroke();
+      }
+
+      // 地球 → 画月球
+      if (name === 'earth') {
+        const moonAngle = this.moonAngle * Math.PI / 180;
+        const moonR = 14; // 月球轨道半径px
+        const mx = x + moonR * Math.cos(moonAngle);
+        const my = y - moonR * Math.sin(moonAngle);
+        // 月球轨道（极淡）
+        ctx.strokeStyle = 'rgba(200,200,200,0.08)';
+        ctx.lineWidth = 0.3;
+        ctx.beginPath(); ctx.arc(x, y, moonR, 0, Math.PI*2);
+        ctx.stroke();
+        // 月球
+        ctx.fillStyle = '#d0d0d0';
+        ctx.shadowColor = '#ddd';
+        ctx.shadowBlur = 3;
+        ctx.beginPath(); ctx.arc(mx, my, 2.5, 0, Math.PI*2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        // 月相（明暗交界）
+        ctx.fillStyle = '#888';
+        ctx.beginPath(); ctx.arc(mx-0.5, my-0.3, 1.2, 0, Math.PI*2);
+        ctx.fill();
+        // 标签
+        ctx.fillStyle = 'rgba(200,190,170,0.35)';
+        ctx.font = '7px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('月', mx, my + 2.5 + 8);
+      }
+
+      // 名称
+      ctx.fillStyle = 'rgba(200,190,170,0.55)';
+      ctx.font = '10px "Times New Roman","宋体",serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.name_cn, x, y + sz + 12);
+    }
+}
+};
+
+// 选择日期时联动太阳系
+const origSelect = selectDate;
+selectDate = function(day) {
+  origSelect(day);
+  SS.fetchAndDraw();
+};
+
+// 日历加载后也加载太阳系
+const origLoad = loadCalendar;
+loadCalendar = async function() {
+  await origLoad.apply(this, arguments);
+  if (!SS.canvas) SS.init();
+  SS.fetchAndDraw();
+};
+
+document.addEventListener('DOMContentLoaded', ()=>{ if (!SS.canvas) SS.init(); });
+</script>
+</body>
+</html>
