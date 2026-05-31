@@ -1,8 +1,8 @@
-# 司天学苑 - 本地离线版 (calendar_engine)
+
 
 ## 项目概述
 
-基于 [www.sitianxueyuan.com](https://www.sitianxueyuan.com/) 逆向分析构建的本地离线八字排盘引擎。
+基于 [www.sitianxueyuan.com](https://www.sitianxueyuan.com/)。
 
 ### 分析结论
 
@@ -58,18 +58,6 @@ python main.py --year 2026 --month 5 --day 27 --hour 16 --gender 男 --json
 - Flask
 - requests
 - tyme4py（农历天文计算）
-
-### 在线部署（免费）
-
-本项目支持一键部署到 **Render.com**（免费，无需信用卡）：
-
-1. 将项目推送到 GitHub 仓库
-2. 登录 [render.com](https://render.com) → New Web Service
-3. 连接你的 GitHub 仓库
-4. Render 会自动识别 `render.yaml`，点 Deploy 即可
-5. 部署完成后访问 `https://你的应用名.onrender.com`
-
-> 注意：免费版 15 分钟无访问会休眠，再次访问需等 30 秒唤醒。
 
 ### 本机使用
 
